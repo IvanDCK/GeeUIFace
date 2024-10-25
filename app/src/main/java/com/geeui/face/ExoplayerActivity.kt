@@ -5,12 +5,14 @@ import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.annotation.OptIn
+import androidx.media3.common.MediaItem
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DefaultDataSource
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import com.geeui.face.databinding.ActivityExoplayerBinding
-import com.geeui.face.databinding.ActivityMainBinding
-import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.SimpleExoPlayer
-import com.google.android.exoplayer2.source.ProgressiveMediaSource
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
+
 import java.io.File
 
 class ExoplayerActivity : AppCompatActivity() {
@@ -23,8 +25,9 @@ class ExoplayerActivity : AppCompatActivity() {
         play()
     }
 
+    @OptIn(UnstableApi::class)
     fun play() {
-        val player = SimpleExoPlayer.Builder(this@ExoplayerActivity).build()
+        val player = ExoPlayer.Builder(this@ExoplayerActivity).build()
         binding.playerView.player = player
 
 // 设置透明背景
@@ -36,7 +39,7 @@ class ExoplayerActivity : AppCompatActivity() {
        val videoUri= Uri.fromFile(file)
 //        val videoUri =  Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.a1);
         val mediaSource =
-            ProgressiveMediaSource.Factory(DefaultDataSourceFactory(this@ExoplayerActivity))
+            ProgressiveMediaSource.Factory(DefaultDataSource.Factory(this@ExoplayerActivity))
                 .createMediaSource(MediaItem.fromUri(videoUri))
 
 // 准备播放器并播放视频

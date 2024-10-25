@@ -14,7 +14,7 @@
         android:src="@mipmap/ic_launcher" />
 
     <!-- MediaPlayer 的 SurfaceView -->
-    <com.google.android.exoplayer2.ui.PlayerView
+    <androidx.media3.ui.PlayerView
         android:id="@+id/playerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace 'com.geeui.face'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.geeui.face"
         minSdk 26
-        targetSdk 33
+        targetSdk 34
         versionCode 202402161
         versionName "1.1."+versionCode
         viewBinding {
@@ -18,6 +18,7 @@ android {
         }
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+    /*
     signingConfigs {
 
         config {
@@ -27,46 +28,63 @@ android {
             storePassword 'letianpai0801'
         }
     }
+     */
+
 
     buildTypes {
         debug {
-            signingConfig signingConfigs.config
+            //signingConfig signingConfigs.config
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
 
         }
         release {
-            signingConfig signingConfigs.config
+            //signingConfig signingConfigs.config
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = JavaVersion.VERSION_11
+    }
+    buildFeatures {
+        buildFeatures.aidl = true
+        buildConfig = true
+        aidl = true
+        viewBinding = true
+    }
+    sourceSets {
+        main {
+            aidl.srcDirs = ['src/main/aidl']
+        }
     }
 }
 
 dependencies {
 
-    implementation 'androidx.core:core-ktx:1.7.0'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.8.0'
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.material:material:1.12.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'tv.danmaku.ijk.media:ijkplayer-java:0.8.8'
+    //implementation 'tv.danmaku.ijk.media:ijkplayer-java:0.8.8'
 //    implementation 'tv.danmaku.ijk.media:ijkplayer-armv7a:0.8.8'
 //    implementation 'tv.danmaku.ijk.media:ijkplayer-armv5:0.8.8'
-    implementation 'tv.danmaku.ijk.media:ijkplayer-arm64:0.8.8'
+    //implementation 'tv.danmaku.ijk.media:ijkplayer-arm64:0.8.8'
 //    implementation 'tv.danmaku.ijk.media:ijkplayer-x86:0.8.8'
-    implementation 'tv.danmaku.ijk.media:ijkplayer-x86_64:0.8.8'
-    implementation 'tv.danmaku.ijk.media:ijkplayer-exo:0.8.8'
-    implementation 'com.google.android.exoplayer:exoplayer-core:2.17.1'
-    implementation 'com.google.android.exoplayer:exoplayer-ui:2.17.1'
-    implementation "com.google.code.gson:gson:2.8.6"
+    //implementation 'tv.danmaku.ijk.media:ijkplayer-x86_64:0.8.8'
+    //implementation 'tv.danmaku.ijk.media:ijkplayer-exo:0.8.8'
+    implementation 'androidx.media3:media3-exoplayer:1.4.1'
+    implementation 'androidx.media3:media3-ui:1.4.1'
+    //implementation 'com.google.android.exoplayer:exoplayer-core:2.19.1'
+    //implementation 'com.google.android.exoplayer:exoplayer-ui:2.19.1'
+    //implementation("com.google.android.exoplayer:exoplayer-mediasession:2.19.1")
+    implementation "com.google.code.gson:gson:2.11.0"
     implementation project(path: ':CommandLib')
     implementation project(path: ':GestureFactory')
     implementation project(path: ':Components')
+    implementation project(':CommChannel')
 }
