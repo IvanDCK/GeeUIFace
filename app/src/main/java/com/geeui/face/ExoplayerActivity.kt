@@ -30,11 +30,11 @@ class ExoplayerActivity : AppCompatActivity() {
         val player = ExoPlayer.Builder(this@ExoplayerActivity).build()
         binding.playerView.player = player
 
-// 设置透明背景
+        // Setting a transparent background
         binding.playerView.background = ColorDrawable(Color.TRANSPARENT)
 
-// 创建 MediaSource
-        var file=File("sdcard/assets/video/h0005.mp4")
+        // Establish MediaSource
+        val file=File("sdcard/assets/video/h0005.mp4")
 //        var file=File("sdcard/b.mp4")
        val videoUri= Uri.fromFile(file)
 //        val videoUri =  Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.a1);
@@ -42,7 +42,7 @@ class ExoplayerActivity : AppCompatActivity() {
             ProgressiveMediaSource.Factory(DefaultDataSource.Factory(this@ExoplayerActivity))
                 .createMediaSource(MediaItem.fromUri(videoUri))
 
-// 准备播放器并播放视频
+        // Prepare the player and play the video
 
         player.setMediaSource(mediaSource)
         player.prepare()

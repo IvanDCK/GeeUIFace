@@ -66,12 +66,12 @@ class AudioCmdResponseManager private constructor(context: Context) {
             }
             try {
                 if (gestureData.ttsInfo != null) {
-                    //响应单元在Launcher
+                    //Response unit in Launcher
 //                RhjAudioManager.getInstance().speak(gestureData.getTtsInfo().getTts());
                     iLetianpaiService.setTTS("speakText", gestureData.ttsInfo!!.tts)
                 }
                 if (gestureData.expression != null) {
-                    //响应单元在Launcher
+                    //Response unit in Launcher
 //                iLetianpaiService.setCommand(new LtpCommand(RobotRemoteConsts.COMMAND_TYPE_FACE, ((gestureData.getExpression()).toString())));
                     iLetianpaiService.setExpression(
                         RobotRemoteConsts.COMMAND_TYPE_FACE,
@@ -79,7 +79,7 @@ class AudioCmdResponseManager private constructor(context: Context) {
                     )
                 }
                 if (gestureData.antennalight != null) {
-                    //响应单元在MCUservice
+                    //Response unit in MCUservice
 //                iLetianpaiService.setCommand(new LtpCommand(RobotRemoteConsts.COMMAND_TYPE_ANTENNA_LIGHT, ((gestureData.getAntennalight()).toString())));
                     iLetianpaiService.setMcuCommand(
                         RobotRemoteConsts.COMMAND_TYPE_ANTENNA_LIGHT,
@@ -87,7 +87,7 @@ class AudioCmdResponseManager private constructor(context: Context) {
                     )
                 }
                 if (gestureData.soundEffects != null) {
-                    //响应单元在AudioService
+                    //The response unit is in the AudioService
 //                iLetianpaiService.setCommand(new LtpCommand(RobotRemoteConsts.COMMAND_TYPE_SOUND, ((gestureData.getSoundEffects()).toString())));
                     iLetianpaiService.setAudioEffect(
                         RobotRemoteConsts.COMMAND_TYPE_SOUND,
@@ -95,7 +95,7 @@ class AudioCmdResponseManager private constructor(context: Context) {
                     )
                 }
                 if (gestureData.footAction != null) {
-                    //响应单元在MCUservice
+                    //Response unit in MCUservice
 //                iLetianpaiService.setCommand(new LtpCommand(RobotRemoteConsts.COMMAND_TYPE_MOTION, (gestureData.getFootAction()).toString()));
                     iLetianpaiService.setMcuCommand(
                         RobotRemoteConsts.COMMAND_TYPE_MOTION,
@@ -103,7 +103,7 @@ class AudioCmdResponseManager private constructor(context: Context) {
                     )
                 } else {
                     val motion = Motion()
-                    //0会立即停止当前的动作
+                    //0 stops the current action immediately
                     motion.number = 0
                     //                iLetianpaiService.setCommand(new LtpCommand(RobotRemoteConsts.COMMAND_TYPE_MOTION, motion.toString()));
                     iLetianpaiService.setMcuCommand(
@@ -112,7 +112,7 @@ class AudioCmdResponseManager private constructor(context: Context) {
                     )
                 }
                 if (gestureData.earAction != null) {
-                    //响应单元在MCUservice
+                    //Response unit in MCUservice
 //                iLetianpaiService.setCommand(new LtpCommand(RobotRemoteConsts.COMMAND_TYPE_ANTENNA_MOTION, (gestureData.getEarAction()).toString()));
                     iLetianpaiService.setMcuCommand(
                         RobotRemoteConsts.COMMAND_TYPE_ANTENNA_MOTION,
@@ -147,7 +147,7 @@ class AudioCmdResponseManager private constructor(context: Context) {
 //            log += "    天线" + gestureData.getAntennalight().getAntenna_light();
 //        }
 //
-            Log.d("AudioCmdResponseManager", "解析给实际执行单元 $gestureData")
+            Log.d("AudioCmdResponseManager", "Parsing to the actual implementation unit $gestureData")
         }
     }
 }

@@ -39,7 +39,7 @@ class NetWorkChangeReceiver : BroadcastReceiver() {
                         NetworkChangingUpdateCallback.NETWORK_TYPE_WIFI,
                         3
                     )
-                    //移动网络
+                    // Mobile network
                 } else if (ConnectivityManager.TYPE_MOBILE == activeNetworkInfo.type) {
                     NetworkChangingUpdateCallback.instance.setNetworkStatus(
                         NetworkChangingUpdateCallback.NETWORK_TYPE_MOBILE,
@@ -81,7 +81,7 @@ class NetWorkChangeReceiver : BroadcastReceiver() {
                     -1
                 )
             } else if (mNetworkinfo!!.type == ConnectivityManager.TYPE_MOBILE) {
-                // 暂无移动网络需求，没有处理此部分逻辑
+                // There is no need for a mobile network at this time and this part of the logic is not addressed
             }
         }
     }

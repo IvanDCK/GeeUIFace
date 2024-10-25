@@ -14,31 +14,25 @@ import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
-import android.view.SurfaceHolder
 import android.view.View
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DefaultDataSource
+import androidx.media3.datasource.RawResourceDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.SimpleExoPlayer
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
-import com.elvishew.xlog.LogUtils
 import com.geeui.face.databinding.ActivityMainBinding
 import com.geeui.face.service.AutoService
-//import com.geeui.face.utils.RawDataSourceProvider
-
 import com.letianpai.robot.components.network.system.SystemUtil
 import com.renhejia.robot.commandlib.consts.RobotRemoteConsts
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-//import tv.danmaku.ijk.media.player.IjkMediaPlayer
 import java.io.File
+import java.io.IOException
 import java.util.*
-
 
 
 //EXO
@@ -48,6 +42,7 @@ import java.util.*
 class MainActivity : AppCompatActivity(),
     AutoService.OnFaceChangeListener {
     private var surfaceAvailable: Boolean = false
+    private var mediaPlayer : ExoPlayer? = null
     private var isPlaying: Boolean = false
     private lateinit var binding: ActivityMainBinding
     private var dispatchService: AutoService? = null
@@ -72,7 +67,7 @@ class MainActivity : AppCompatActivity(),
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d("MainActivity", "onCreate: " + System.currentTimeMillis());
         super.onCreate(savedInstanceState)
-        // 隐藏状态栏（通知栏）
+        // Hide status bar (notification bar)
         window.setFlags(
             WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN
         )
@@ -89,22 +84,34 @@ class MainActivity : AppCompatActivity(),
         Log.d(
             "MainActivity",
             "onCreate: " + intent.getStringExtra("face") + "   " + intent.getStringExtra("mode")
-        );
-        var showVideo = SystemUtil.get("com.geeui.showVideo", "")
+        )
+        val showVideo = SystemUtil.get("com.geeui.showVideo", "")
         Log.d("MainActivity", "onCreate: showVideo:=  $showVideo")
 
         if (showVideo.isNullOrEmpty() || showVideo == "true") {
             playAudioAndVideo = false
             //binding.tips.visibility = View.GONE
             binding.playerView.visibility = View.VISIBLE
+            initSurface()
         } else if (showVideo == "playAudioAndVideo") {
             playAudioAndVideo = true
             //binding.tips.visibility = View.GONE
             binding.playerView.visibility = View.VISIBLE
+            initSurface()
         } else {
             playAudioAndVideo = false
             binding.playerView.visibility = View.GONE
             //binding.tips.visibility = View.VISIBLE
+        }
+    }
+
+    private fun initSurface() {
+        mediaPlayer = ExoPlayer.Builder(this@MainActivity).build()
+        binding.playerView.player = mediaPlayer
+        surfaceAvailable = true
+        Log.d("MainActivity", "surface created ")
+        if (currentFace.isNullOrBlank() && intentFace.isNotEmpty()) {
+            openVideo(intentFace)
         }
     }
 
@@ -114,11 +121,11 @@ class MainActivity : AppCompatActivity(),
             "MainActivity",
             "onNewIntent: " + intent?.getStringExtra("face") + "   " + intent?.getStringExtra("mode")
         )
-        var face = intent?.getStringExtra("face")
+        val face = intent?.getStringExtra("face")
         if (face != null) {
             openVideo(face)
         }
-        var mode = intent?.getStringExtra("mode")
+        val mode = intent?.getStringExtra("mode")
         if (mode != null) {
             if (dispatchService != null) {
                 Log.d("MainActivity", "onNewIntent: $mode");
@@ -133,7 +140,7 @@ class MainActivity : AppCompatActivity(),
 
     override fun onResume() {
         super.onResume()
-        // 隐藏导航栏
+        // Hide navigation bar
         hideNavigationBar()
         binding.root.keepScreenOn = true
         if (isPlaying) {
@@ -169,7 +176,7 @@ class MainActivity : AppCompatActivity(),
         val decorView = window.decorView
         decorView.setOnSystemUiVisibilityChangeListener { visibility: Int ->
             if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
-                // 当导航栏可见时，隐藏导航栏
+                // Hide the navigation bar when it is visible
                 window.decorView.systemUiVisibility =
                     View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
             }
@@ -177,17 +184,18 @@ class MainActivity : AppCompatActivity(),
     }
 
     private fun bindDispatchService() {
-        var intent = Intent(this@MainActivity, AutoService::class.java)
+        val intent = Intent(this@MainActivity, AutoService::class.java)
         bindService(intent, dispatchConnection, Context.BIND_AUTO_CREATE)
     }
 
     //    private var mediaPlayer: IjkMediaPlayer? = null
 
-    var mediaPlayer : ExoPlayer?=null
-    private fun openVideo(tNname: String) {
 
+    private fun openVideo(tNname: String) {
+        binding.playerView.useController = false
+        binding.playerView.controllerShowTimeoutMs = 0
         if (!surfaceAvailable) {
-            Log.d("MainActivity", "openVideo: 不展示视频");
+            Log.d("MainActivity", "openVideo: Does not show video");
             return
         }
 
@@ -197,49 +205,39 @@ class MainActivity : AppCompatActivity(),
         }
 
         if (currentFace.equals(name)) {
-            Log.d("MainActivity", "openVideo: 名字相同，暂不用切换新的表情" + name);
+            Log.d("MainActivity",
+                "openVideo: Same name, no need to switch to a new face for now $name"
+            )
             return
         }
         currentFace = name
 
         mediaPlayer?.release()
 
-        mediaPlayer = SimpleExoPlayer.Builder(this@MainActivity).build()
+        mediaPlayer = ExoPlayer.Builder(this@MainActivity).build()
         Log.e(
             "MainActivity",
             "openVideo_name: $name surfaceAvailable: $surfaceAvailable"
-        );
+        )
 
         mediaPlayer?.let {
-//            it.setOnPreparedListener { mp ->
-//                if (surfaceAvailable && mediaPlayer != null) {
-//                    mediaPlayer!!.setDisplay(binding.playerView.holder)
-//                    mediaPlayer!!.play()
-//                    mediaPlayer!!.isLooping = true
-//                }
-//            }
+            binding.playerView.player = mediaPlayer
 
             val listener = object : Player.Listener {
                 override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
                     if (playbackState == Player.STATE_READY) {
                         // Media resource is ready to play
                         binding.playerView.player = it // Attach the player to the PlayerView
-                        it.playWhenReady = true // Start playback
+                        it.playWhenReady = true
+                        it.play()
                         it.repeatMode = Player.REPEAT_MODE_ALL
                     }
                 }
             }
 
+            //mediaPlayer!!.addListener(listener)
             it.addListener(listener)
 
-//            it.setOnCompletionListener { }
-//            it.setOnErrorListener { mp, what, extra ->
-//                Log.d(
-//                    "TAG",
-//                    "openVideo: " + "onError: " + mp + "  what:" + what + "  " + extra
-//                )
-//                return@setOnErrorListener false
-//            }
 
 
 //            var afd = resources.assets.openFd("video/" + name + ".mp4")
@@ -252,7 +250,28 @@ class MainActivity : AppCompatActivity(),
 //            val uriStr = "android.resource://" + this.packageName + "/" +"R.raw.h0001.mp4"
 //            val uri = Uri.parse(uriStr)
 //            var file= File("sdcard/assets/video/h0001.mp4")
-            var file= File("sdcard/assets/video/"+name+".mp4")
+            //var file= File("sdcard/assets/video/"+name+".mp4")
+
+
+            try {
+                val assetManager = assets
+                val afd = assetManager.openFd("video/$name.mp4")
+                val uri = Uri.parse("file:///android_asset/video/$name.mp4")
+                val dataSourceFactory: DataSource.Factory = DefaultDataSource.Factory(this)
+
+                val mediaSource = ProgressiveMediaSource.Factory(dataSourceFactory)
+                    .createMediaSource(MediaItem.fromUri(uri))
+
+                mediaPlayer?.setMediaSource(mediaSource)
+                mediaPlayer?.prepare()
+                mediaPlayer?.playWhenReady=true
+            } catch (e: IOException) {
+                Log.e("MainActivity", "Error opening video file: ${e.message}")
+            }
+            /*
+             val assetManager = assets
+            val afd = assetManager.openFd("video/$name.mp4")
+            var file= resources.assets.openFd("video/$name.mp4")
             val videoUri= Uri.fromFile(file)
             val mediaSource =
                 ProgressiveMediaSource.Factory(DefaultDataSource.Factory(this))
@@ -261,6 +280,8 @@ class MainActivity : AppCompatActivity(),
             Log.d("openVideo", "openVideo: afd"+videoUri)
             it.setMediaSource(mediaSource)
             it.prepare()
+             */
+
         }
 
     }
@@ -290,7 +311,7 @@ class MainActivity : AppCompatActivity(),
             val networkCallback: ConnectivityManager.NetworkCallback = object : ConnectivityManager.NetworkCallback() {
                 override fun onAvailable(network: Network) {
                     Log.d("TAG", "onAvailable: " + network)
-                    // Wi-Fi连接已建立
+                    // Wi-Fi connection established
                     (getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager).bindProcessToNetwork(
                         network
                     )
@@ -298,7 +319,7 @@ class MainActivity : AppCompatActivity(),
 
                 override fun onUnavailable() {
                     Log.d("TAG", "onUnavailable: ")
-                    // Wi-Fi连接不可用
+                    // Wi-Fi connection not available
                 }
             }
 

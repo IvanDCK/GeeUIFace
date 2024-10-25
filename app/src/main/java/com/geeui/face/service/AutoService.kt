@@ -65,7 +65,7 @@ class AutoService : Service() {
     private var searchPeopleCount = 0
     private val goSleepTime = 5 * 60 * 1000
     private val goSleepMode = Runnable {
-        Log.d("AutoService", "run: 跳到睡眠模式")
+        Log.d("AutoService", "run: Jump to sleep mode")
         if (iLetianpaiService != null && SystemUtil.get("robot_not_sleep", "")?.isEmpty() == true) {
             try {
                 iLetianpaiService!!.setAppCmd(
@@ -111,23 +111,23 @@ class AutoService : Service() {
                                 MCUCommandConsts.COMMAND_TYPE_POWER_CONTROL,
                                 PowerMotion(3, 0).toString()
                             )
-                            Log.d("AutoService", "onAppCommandReceived: 收到卸力执行30500000")
+                            Log.d("AutoService", "onAppCommandReceived: Received unloading execution 30500000")
                             iLetianpaiService!!.setMcuCommand(
                                 MCUCommandConsts.COMMAND_TYPE_POWER_CONTROL,
                                 PowerMotion(5, 0).toString()
                             )
-                            Log.d("AutoService", "onAppCommandReceived: 收到卸力执行3050")
+                            Log.d("AutoService", "onAppCommandReceived: Received unloading execution 3050")
                         } else {
                             iLetianpaiService!!.setMcuCommand(
                                 MCUCommandConsts.COMMAND_TYPE_POWER_CONTROL,
                                 PowerMotion(3, 1).toString()
                             )
-                            Log.d("AutoService", "onAppCommandReceived: 收到上力执行3151-0000")
+                            Log.d("AutoService", "onAppCommandReceived: Receiving power-up execution 3151-0000")
                             iLetianpaiService!!.setMcuCommand(
                                 MCUCommandConsts.COMMAND_TYPE_POWER_CONTROL,
                                 PowerMotion(5, 1).toString()
                             )
-                            Log.d("AutoService", "onAppCommandReceived: 收到上力执行3151")
+                            Log.d("AutoService", "onAppCommandReceived: Receiving power-up execution 3151")
                         }
                         currentMode = data
                     }
@@ -141,8 +141,8 @@ class AutoService : Service() {
     private val ltpExpressionCallback: LtpExpressionCallback =
         object : LtpExpressionCallback.Stub() {
             override fun onExpressionChanged(command: String, data: String) {
-                Log.d("AutoService", "收到AIDL切换表情: $command   $data")
-                if (!data.isEmpty() && faceChangeListener != null) {
+                Log.d("AutoService", "Received AIDL change face: $command   $data")
+                if (data.isNotEmpty() && faceChangeListener != null) {
                     if (data.startsWith("{")) {
                         val face = gson.fromJson(data, Face::class.java)
                         if (face.face.isNotEmpty()) {
@@ -178,8 +178,8 @@ class AutoService : Service() {
                     override fun onResponse(call: Call, response: Response) {
                         try {
                             val json = response.body?.string()
-                            val jo = JSONObject(json)
-                            val data = jo.optJSONObject("data")
+                            val jo = json?.let { JSONObject(it) }
+                            val data = jo?.optJSONObject("data")
                             val ad = data?.optJSONArray("config_data")
                             val type = object : TypeToken<ArrayList<GestureData>>() {}.type
                             val list = gson.fromJson<ArrayList<GestureData>>(ad.toString(), type)
@@ -211,7 +211,7 @@ class AutoService : Service() {
                             MCUCommandConsts.COMMAND_TYPE_POWER_CONTROL,
                             PowerMotion(5, 1).toString()
                         )
-                        Log.d("AutoService", "onAppCommandReceived: 启动执行上力3151")
+                        Log.d("AutoService", "onAppCommandReceived: Starting execution on force 3151")
                     } else {
                         it.setMcuCommand(
                             MCUCommandConsts.COMMAND_TYPE_POWER_CONTROL,
@@ -221,7 +221,7 @@ class AutoService : Service() {
                             MCUCommandConsts.COMMAND_TYPE_POWER_CONTROL,
                             PowerMotion(5, 0).toString()
                         )
-                        Log.d("AutoService", "onAppCommandReceived: 启动执行卸力3050")
+                        Log.d("AutoService", "onAppCommandReceived: Initiate implementation of offloading 3050")
                     }
                 }
             } catch (e: Exception) {
@@ -286,7 +286,7 @@ class AutoService : Service() {
     private fun addGestureListeners() {
         GestureCallback.instance.setGestureCompleteListener(object : GestureCallback.GestureCompleteListener {
             override fun onGestureCompleted(gesture: String?, geTaskId: Int) {
-                Log.e("onGestureCompleted", "gesture 完成$gesture taskId: $geTaskId")
+                Log.e("onGestureCompleted", "gesture completed: $gesture taskId: $geTaskId")
                 if (isServiceDestroy) {
                     return
                 }
@@ -310,7 +310,7 @@ class AutoService : Service() {
     private fun onListGestureCompleted(taskId: Int) {
         Log.d(
             "AutoService",
-            "onListGestureCompleted: 执行完成的gesture id:$taskId    currentMode $currentMode currentGestureStage: $currentGestureStage  isServiceDestroy:$isServiceDestroy"
+            "onListGestureCompleted: Execute the completed gesture id:$taskId    currentMode $currentMode currentGestureStage: $currentGestureStage  isServiceDestroy:$isServiceDestroy"
         )
         if (isServiceDestroy) {
             return
@@ -367,7 +367,7 @@ class AutoService : Service() {
         val finalNextTaskId = nextTaskId
         Log.d(
             "AutoService",
-            "onListGestureCompleted: 延迟时间：$time     finalNextTaskId: $finalNextTaskId handler:$handler"
+            "onListGestureCompleted: delay：$time     finalNextTaskId: $finalNextTaskId handler:$handler"
         )
         handler!!.postDelayed({
             if (handler != null) {
@@ -391,7 +391,7 @@ class AutoService : Service() {
             iLetianpaiService!!.unregisterExpressionCallback(ltpExpressionCallback)
             iLetianpaiService!!.unregisterLCCallback(ltpLongConnectCallback)
         } catch (e: Exception) {
-            Log.d(TAG, "AutoService onDestroy: 解除绑定catch")
+            Log.d(TAG, "AutoService onDestroy: unbind catch")
             e.printStackTrace()
         }
         unbindService(serviceConnection)
@@ -513,7 +513,7 @@ class AutoService : Service() {
         list.add(gestureData)
         //        list.add(gestureData1);
 //        list.add(gestureData2);
-        logGestureData("找人行为", list)
+        logGestureData("Search people behaviour", list)
         showGestures(list, RGestureConsts.GESTURE_CHANGE_PEOPLE)
     }
 
@@ -548,7 +548,7 @@ class AutoService : Service() {
         } else {
             GestureCenter.foundNoPeoGestureData()
         }
-        Log.d("AutoService", "searchPeopleResult: 找到了人$data")
+        Log.d("AutoService", "searchPeopleResult: found someone $data")
         //        list.addAll(getEGestureData());
 //        list.addAll(getEGestureData());
         showGestures(list, RGestureConsts.GESTURE_SEARCH_PEOPLE_RESULT)
@@ -559,7 +559,7 @@ class AutoService : Service() {
         val gestureData = GestureData()
         val list = classBGesture
         list.add(gestureData)
-        logGestureData("B类行为", list)
+        logGestureData("Class B", list)
         showGestures(list, RGestureConsts.GESTURE_CHANGE_CLASS_B)
     }
 
@@ -627,7 +627,7 @@ class AutoService : Service() {
     private fun changeClassC() {
         currentGestureStage = RGestureConsts.GESTURE_CHANGE_CLASS_C
         val list = classCGestue
-        logGestureData("C类行为", list)
+        logGestureData("Change to class C", list)
         showGestures(list, RGestureConsts.GESTURE_CHANGE_CLASS_C)
     }
 
@@ -665,7 +665,7 @@ class AutoService : Service() {
     private fun changeClassD() {
         currentGestureStage = RGestureConsts.GESTURE_CHANGE_CLASS_D
         val list = classDGesture
-        logGestureData("D类行为", list)
+        logGestureData("Class D", list)
         showGestures(list, RGestureConsts.GESTURE_CHANGE_CLASS_D)
     }
 
@@ -688,7 +688,7 @@ class AutoService : Service() {
                 gestureData.interval = 3000
                 list.add(gestureData)
             }
-            Log.d("AutoService", "次数：$count")
+            Log.d("AutoService", "Nº of times：$count")
             return list
         }
 
@@ -696,7 +696,7 @@ class AutoService : Service() {
         currentGestureStage = RGestureConsts.GESTURE_CHANGE_ALL
         //        ArrayList<GestureData> list = getOneFixedPose();
         val list = getAllStatusGesture()
-        logGestureData("所有姿态库随机其中一个", list)
+        logGestureData("Randomise one of all pose libraries", list)
         showGestures(list, RGestureConsts.GESTURE_CHANGE_ALL)
     }
 
@@ -801,7 +801,7 @@ class AutoService : Service() {
     }
 
     private fun logGestureData(gestureData: GestureData?) {
-        Log.d("AutoService", "解析给实际执行单元 $gestureData")
+        Log.d("AutoService", "Parsing to the actual implementation unit $gestureData")
     }
 
     private fun getRandomIndex(length: Int): Int {
@@ -861,25 +861,25 @@ class AutoService : Service() {
         for (i in list.indices) {
             val gestureData = list[i]
             if (gestureData.footAction != null) {
-                log += "   动作:" + gestureData.footAction!!.showLog()
+                log += "   foot action:" + gestureData.footAction!!.showLog()
             }
             if (gestureData.expression != null) {
-                log += "   表情：" + gestureData.expression!!.showLog()
+                log += "   expression：" + gestureData.expression!!.showLog()
             }
             if (gestureData.soundEffects != null) {
-                log += "   声音：" + gestureData.soundEffects!!.showLog()
+                log += "   sound effects：" + gestureData.soundEffects!!.showLog()
             }
             if (gestureData.earAction != null) {
-                log += "   耳朵：" + gestureData.earAction
+                log += "   ear action：" + gestureData.earAction
             }
             if (gestureData.antennalight != null) {
-                log += "    天线" + gestureData.antennalight
+                log += "    antenna light" + gestureData.antennalight
             }
             if (i > 0) {
                 log += "\n              "
             }
         }
-        Log.d("AudioCmdResponseManager", "将要执行 $tag  $log")
+        Log.d("AudioCmdResponseManager", "Will execute $tag  $log")
     }
 
     private fun showRandomAll() {
@@ -887,7 +887,7 @@ class AutoService : Service() {
     }
 
     fun setRobotMode(mode: String) {
-        Log.d("AutoService", "setRobotMode: 机器人模式改变$mode")
+        Log.d("AutoService", "setRobotMode: Robot mode change to $mode")
         if (currentMode == mode) {
             return
         } else {
@@ -900,7 +900,7 @@ class AutoService : Service() {
                 RobotRemoteConsts.COMMAND_VALUE_CHANGE_MODE_STATIC -> {}
                 RobotRemoteConsts.COMMAND_VALUE_CHANGE_MODE_DEMO -> {}
                 RobotRemoteConsts.COMMAND_VALUE_CHANGE_MODE_SLEEP -> Log.d(
-                    "AutoService", "当前是机器人睡眠状态"
+                    "AutoService", "The robot is currently asleep."
                 )
             }
         }
